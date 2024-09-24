@@ -8,7 +8,7 @@ public class BrokerManager {
 
 	private static HashMap<String,Broker> brokers = new HashMap<String, Broker>();
 	
-	public static void addBroker(String name, Broker b) {
+	public synchronized static void addBroker(String name, Broker b) {
 		brokers.put(name, b);
 	}
 	
