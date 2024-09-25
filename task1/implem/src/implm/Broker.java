@@ -7,6 +7,7 @@ import Interface.Channel;
 
 public class Broker extends Interface.Broker{
 	
+	
 	private ArrayList<RDV> rdvs;
 	private ArrayList<Channel> channels;
 
@@ -14,6 +15,7 @@ public class Broker extends Interface.Broker{
 		super(name);
 		rdvs = new ArrayList<>();
 		channels = new ArrayList<>();
+		BrokerManager.addBroker(name, this);
 	}
 
 	@Override
@@ -22,7 +24,7 @@ public class Broker extends Interface.Broker{
 			throw new IllegalStateException("Accept on same port already pending");
 		
 		RDV rdv = this.getConnectRdv(port);
-		Broker target;
+		Channel channel;
 		if(rdv == null) {
 			rdv = this.createRDV(this, port);
 			while(!rdv.getReadyState()) {
@@ -31,15 +33,17 @@ public class Broker extends Interface.Broker{
 				}
 				catch (InterruptedException e) {}
 			}
-			target = rdv.getJoiner();
+			
+			channel = createChannel(true, rdv);
 		}
 		else {
 			rdv.join(this);
-			target = rdv.getOwner();
+			channel = createChannel(false, rdv);
 		}
 		
 		this.removeRdv(rdv);
-		return null; //TO REMOVE
+		channels.add(channel);
+		return channel;
 	}
 
 	@Override
@@ -47,19 +51,32 @@ public class Broker extends Interface.Broker{
 		Broker target = (Broker) BrokerManager.lookup(name);
 		if(target != null) {
 			RDV rdv = target.getAcceptRdv(port);
+			Channel channel;
 			if (rdv == null) {
 				rdv = this.askRDV(target, port);
+				channel = createChannel(true, rdv);
 			}
 			else {
 				boolean joined = rdv.join(this);
-				if(!joined)
+				if(!joined) {
 					rdv = this.askRDV(target, port);
+					channel = createChannel(true, rdv);
+				}
+				else {
+					channel = createChannel(false, rdv);
+				}
 			}
 			
-			return null; //TO REMOVE
+			return channel;
 		}
 		return null;
 		
+	}
+	
+	public Channel createChannel(boolean owner, RDV rdv) {
+		if(owner)
+			return new implm.Channel(rdv.getOwnerReadCircularBuffer(), rdv.getOwnerWriteCircularBuffer());
+		return new implm.Channel(rdv.getOwnerWriteCircularBuffer(), rdv.getOwnerReadCircularBuffer());
 	}
 	
 	public RDV askRDV(Broker target, int port) {

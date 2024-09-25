@@ -3,10 +3,14 @@ package implm;
 
 public class RDV {
 	
+	private static final int DEFAULT_CAPACITY = 50;
+	
 	private boolean ready;
 	private Broker owner;
 	private Broker joiner;
 	private int port;
+	private CircularBuffer in;
+	private CircularBuffer out;
 	
 	public RDV(Broker owner, int port) {
 		this.owner = owner;
@@ -19,7 +23,9 @@ public class RDV {
 		if(joiner != null) {
 			ready = true;
 			joiner = b;
-			notifyAll();
+			in = new CircularBuffer(DEFAULT_CAPACITY);
+			out = new CircularBuffer(DEFAULT_CAPACITY);
+			owner.notifyAll();
 			return true;
 		}
 		return false;
@@ -43,5 +49,13 @@ public class RDV {
 	
 	public Broker getJoiner() {
 		return joiner;
+	}
+	
+	public CircularBuffer getOwnerReadCircularBuffer() {
+		return this.in;
+	}
+	
+	public CircularBuffer getOwnerWriteCircularBuffer() {
+		return this.out;
 	}
 }
