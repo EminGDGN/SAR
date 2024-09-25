@@ -5,7 +5,9 @@ public abstract class Task extends Thread{
 	private Broker b;
 	
 	public Task(Broker b, Runnable r){
-		throw new IllegalCallerException("Task class is abstract");
+		if(this.getClass() == Task.class)
+			throw new IllegalCallerException("Task class is abstract");
+		r.run();
 	}
 	
 	public Broker getBrok() {
