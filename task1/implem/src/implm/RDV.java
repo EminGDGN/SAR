@@ -3,7 +3,7 @@ package implm;
 
 public class RDV {
 	
-	private static final int DEFAULT_CAPACITY = 50;
+	private static final int DEFAULT_CAPACITY = 255;
 	
 	private boolean ready;
 	private Broker owner;
@@ -19,13 +19,16 @@ public class RDV {
 		this.port = port;
 	}
 	
-	public synchronized boolean join(Broker b) {
-		if(joiner != null) {
+	public boolean join(Broker b, boolean remoteBroker) {
+		if(joiner == null) {
 			ready = true;
 			joiner = b;
 			in = new CircularBuffer(DEFAULT_CAPACITY);
 			out = new CircularBuffer(DEFAULT_CAPACITY);
-			owner.notifyAll();
+			if(remoteBroker)
+				joiner.notifyAll();
+			else
+				owner.notifyAll();
 			return true;
 		}
 		return false;

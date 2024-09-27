@@ -2,7 +2,7 @@ package Interface;
 
 public abstract class Broker {
 	
-	private String name;
+	protected String name;
 	
 	public Broker(String name) {
 		

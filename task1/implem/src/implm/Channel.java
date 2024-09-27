@@ -38,16 +38,22 @@ public class Channel extends Interface.Channel{
 					}
 				}
 			}
-			byte b = readBuffer.pull();
-			synchronized (readBuffer) {
-				readBuffer.notify();
+			
+			try {
+				byte b = readBuffer.pull();
+				synchronized (readBuffer) {
+					readBuffer.notify();
+				}
+				if((char)b == '\0') {
+					disconnected = true;
+					return i;
+				}
+				bytes[i + offset] = b;
+				i++;
 			}
-			if((char)b == '\0') {
-				disconnected = true;
+			catch (IllegalStateException e) {
 				return i;
 			}
-			bytes[i + offset] = b;
-			i++;
 		}
 		return i;
 	}
@@ -70,11 +76,17 @@ public class Channel extends Interface.Channel{
 					}
 				}
 			}
-			writeBuffer.push(bytes[i + offset]);
-			synchronized(writeBuffer) {
-				writeBuffer.notify();
+			
+			try {
+				writeBuffer.push(bytes[i + offset]);
+				synchronized(writeBuffer) {
+					writeBuffer.notify();
+				}
+				i++;
 			}
-			i++;
+			catch(IllegalStateException e) {
+				return i;
+			}
 		}
 		return i;
 	}

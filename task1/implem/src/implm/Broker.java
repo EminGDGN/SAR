@@ -26,6 +26,7 @@ public class Broker extends Interface.Broker{
 		RDV rdv = this.getConnectRdv(port);
 		Channel channel;
 		if(rdv == null) {
+			System.out.println("1");
 			rdv = this.createRDV(this, port);
 			while(!rdv.getReadyState()) {
 				try {
@@ -37,8 +38,10 @@ public class Broker extends Interface.Broker{
 			channel = createChannel(true, rdv);
 		}
 		else {
-			rdv.join(this);
+			System.out.println("2");
+			rdv.join(this, true);
 			channel = createChannel(false, rdv);
+			System.out.println("serverside accept done");
 		}
 		
 		this.removeRdv(rdv);
@@ -47,27 +50,29 @@ public class Broker extends Interface.Broker{
 	}
 
 	@Override
-	public synchronized Channel connect(String name, int port) {
+	public Channel connect(String name, int port) {
 		Broker target = (Broker) BrokerManager.lookup(name);
 		if(target != null) {
-			RDV rdv = target.getAcceptRdv(port);
-			Channel channel;
-			if (rdv == null) {
-				rdv = this.askRDV(target, port);
-				channel = createChannel(true, rdv);
-			}
-			else {
-				boolean joined = rdv.join(this);
-				if(!joined) {
+			synchronized(target) {
+				RDV rdv = target.getAcceptRdv(port);
+				Channel channel;
+				if (rdv == null) {
 					rdv = this.askRDV(target, port);
 					channel = createChannel(true, rdv);
 				}
 				else {
-					channel = createChannel(false, rdv);
+					boolean joined = rdv.join(this, false);
+					if(!joined) {
+						rdv = this.askRDV(target, port);
+						channel = createChannel(true, rdv);
+					}
+					else {
+						channel = createChannel(false, rdv);
+					}
 				}
+				
+				return channel;
 			}
-			
-			return channel;
 		}
 		return null;
 		
@@ -83,7 +88,7 @@ public class Broker extends Interface.Broker{
 		RDV rdv = target.createRDV(this, port);
 		while(!rdv.getReadyState()) {
 			try {
-				wait();
+				target.wait();
 			}
 			catch (InterruptedException e) {}
 		}
@@ -93,6 +98,7 @@ public class Broker extends Interface.Broker{
 	public synchronized RDV createRDV(Broker b, int port) {
 		RDV rdv = new RDV(b, port);
 		rdvs.add(rdv);
+		notifyAll();
 		return rdv;
 	}
 	
@@ -105,7 +111,7 @@ public class Broker extends Interface.Broker{
 		return null;
 	}
 	
-	public RDV getConnectRdv(int port) {
+	public synchronized RDV getConnectRdv(int port) {
 		for(RDV rdv : rdvs) {
 			if(rdv.getPort() == port && !rdv.isOwner(this)) {
 				return rdv;
@@ -116,6 +122,10 @@ public class Broker extends Interface.Broker{
 	
 	public void removeRdv(RDV rdv) {
 		rdvs.remove(rdv);
+	}
+	
+	public String getName() {
+		return super.name;
 	}
 
 }
