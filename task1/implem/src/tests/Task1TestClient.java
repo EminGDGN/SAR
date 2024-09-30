@@ -28,16 +28,17 @@ class Task1TestClient implements Runnable{
 		
 		int clientStatus = 0;
 		int serverStatus = 0;
-		int offset = 0;
 		byte[] response = new byte[255];
 		
 		while(clientStatus != 255) {
-			clientStatus = clientChannel.write(buffer, clientStatus, 255 - clientStatus);
-			offset = clientChannel.read(response, offset, clientStatus);
-			for(int i = serverStatus; i < offset; i++) {
-				System.out.println("Client receives " + Integer.toString(response[i]));
+			int bytesSent = clientChannel.write(buffer, clientStatus, 255 - clientStatus);
+			int offset = clientChannel.read(response, serverStatus, bytesSent);
+			
+			for(int i = 0; i < offset; i++) {
+				System.out.println("Client receives " + Integer.toString(response[serverStatus + i]));
 			}
-			serverStatus = offset;
+			clientStatus += bytesSent;
+			serverStatus += offset;
 		}
 		clientChannel.disconnect();
 		try {
