@@ -3,6 +3,7 @@ package Interface;
 public abstract class Task extends Thread{
 	
 	private Broker b;
+	private QueueBroker qb;
 	private Runnable r;
 	
 	public Task(Broker b, Runnable r){
@@ -12,12 +13,23 @@ public abstract class Task extends Thread{
 		this.r = r;
 	}
 	
-	public Broker getBrok() {
+	public Task(QueueBroker qb, Runnable r){
+		if(this.getClass() == Task.class)
+			throw new IllegalCallerException("Task class is abstract");
+		this.qb = qb; 
+		this.r = r;
+	}
+	
+	public Broker getBroker() {
 		return b;
 	}
 	
-    public static Broker getBroker() {
-    	return ((Task)Thread.currentThread()).getBrok();
+	public QueueBroker getQueueBroker() {
+		return qb;
+	}
+	
+    public static Task getTask() {
+    	return (Task)Thread.currentThread();
     }
     
     @Override

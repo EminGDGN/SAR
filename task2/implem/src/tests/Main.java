@@ -1,6 +1,7 @@
 package tests;
 
 import Interface.Broker;
+import Interface.QueueBroker;
 import implm.Task;
 
 public class Main {
@@ -9,7 +10,11 @@ public class Main {
 		Broker client = new implm.Broker("client");
 		Broker server = new implm.Broker("server");
 		
-		new Task(client, new Task1TestClient("server", 80)).start();
-		new Task(server, new Task1TestServer(80)).start();
+		QueueBroker bc = new implm.QueueBroker(client);
+		QueueBroker bs = new implm.QueueBroker(server);
+		
+		new Task(bc, new Task2TestClient("server", 80)).start();
+		new Task(bc, new Task2TestClient("server", 80)).start();
+		new Task(bs, new Task2TestServer(80)).start();
 	}
 }
