@@ -26,7 +26,6 @@ public class Broker extends Interface.Broker{
 		RDV rdv = this.getConnectRdv(port);
 		Channel channel;
 		if(rdv == null) {
-			System.out.println("1");
 			rdv = this.createRDV(this, port);
 			while(!rdv.getReadyState()) {
 				try {
@@ -38,10 +37,8 @@ public class Broker extends Interface.Broker{
 			channel = createChannel(true, rdv);
 		}
 		else {
-			System.out.println("2");
 			rdv.join(this, true);
 			channel = createChannel(false, rdv);
-			System.out.println("serverside accept done");
 		}
 		
 		this.removeRdv(rdv);
