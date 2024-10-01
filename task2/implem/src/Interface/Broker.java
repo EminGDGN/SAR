@@ -1,0 +1,21 @@
+package Interface;
+
+public abstract class Broker {
+	
+	protected String name;
+	
+	public Broker(String name) {
+		
+		if(this.getClass() == Broker.class) {
+			throw new IllegalCallerException("Broker class is abstract");
+		}
+		this.name = name;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+    public abstract Channel accept(int port);
+    public abstract Channel connect(String name, int port);
+}
