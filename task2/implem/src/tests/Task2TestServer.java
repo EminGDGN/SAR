@@ -18,8 +18,8 @@ public class Task2TestServer implements Runnable{
 	
 	private void work(MessageQueue messageQueue) {
 		try {
-			while(true) {
-				byte[] response = messageQueue.receive();
+			byte[] response;
+			while((response = messageQueue.receive()) != null) {
 				for(int i = 0; i < response.length; i++) {
 					System.out.println("Server receives " + response[i]);
 				}
@@ -28,6 +28,7 @@ public class Task2TestServer implements Runnable{
 			}
 		}catch(DisconnectedException e) {
 			System.out.println("Remote channel disconnected");
+			System.out.println("end of work");
 		}
 	}
 

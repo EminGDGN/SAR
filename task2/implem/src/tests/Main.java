@@ -7,6 +7,14 @@ import implm.Task;
 public class Main {
 	
 	public static void main(String[] args) {
-		//TODO : Start task2 tests
+		Broker client = new implm.Broker("client");
+		Broker server = new implm.Broker("server");
+		
+		QueueBroker bc = new implm.QueueBroker(client);
+		QueueBroker bs = new implm.QueueBroker(server);
+		
+		new Task(bc, new Task2TestClient("server", 80)).start();
+		new Task(bc, new Task2TestClient("server", 80)).start();
+		new Task(bs, new Task2TestServer(80)).start();
 	}
 }

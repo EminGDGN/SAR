@@ -24,13 +24,14 @@ class Task2TestClient implements Runnable{
 		for(int i = 1; i <= 255; i++) {
 			buffer[i-1] = (byte)i;
 		}
-		messageQueue.send(buffer, 0, 255);
 		
+		messageQueue.send(buffer, 0, 255);
 		byte[] response = messageQueue.receive();
 		for(int i = 0; i < response.length; i++) {
 			System.out.println("Client receives " + Integer.toString(response[i]));
 		}
 		
+		messageQueue.close();
 	}
 
 }
