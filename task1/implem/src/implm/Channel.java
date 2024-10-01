@@ -10,14 +10,18 @@ public class Channel extends Interface.Channel{
 
 	}
 	
+	private static final String SHUTDOWN_MESSAGE = "SHUTDOWN";
+	
 	private CircularBuffer readBuffer;
 	private CircularBuffer writeBuffer;
 	private boolean disconnected;
+	private StringBuilder stopBuffer;
 	
 	public Channel(CircularBuffer readBuffer, CircularBuffer writeBuffer) {
 		this.readBuffer = readBuffer;
 		this.writeBuffer = writeBuffer;
 		disconnected = false;
+		stopBuffer = new StringBuilder();
 	}
 
 	@Override
@@ -44,17 +48,15 @@ public class Channel extends Interface.Channel{
 				synchronized (readBuffer) {
 					readBuffer.notify();
 				}
-				if((char)b == '\0') {
-					disconnected = true;
-					return i;
-				}
 				bytes[i + offset] = b;
 				i++;
 			}
 			catch (IllegalStateException e) {
-				return i;
+				break;
 			}
 		}
+		if(isShutDown(bytes, offset, i))
+			disconnected = true;
 		return i;
 	}
 
@@ -95,16 +97,28 @@ public class Channel extends Interface.Channel{
 	public void disconnect(){
 		if(disconnected)
 			return;
-		byte[] bytes = {(byte)'\0'};
-		this.write(bytes, 0, 1);
+		byte[] bytes = SHUTDOWN_MESSAGE.getBytes();
+		int i = 0;
+		while(i != bytes.length)
+			i += this.write(bytes, i, bytes.length - i);
 		disconnected = true;
 		
+	}
+	
+	private boolean isShutDown(byte[] bytes, int offset, int length) {
+		stopBuffer.append(new String(bytes, offset, length));
+		if(stopBuffer.length() >= SHUTDOWN_MESSAGE.length()) {
+			String s = stopBuffer.toString();
+			if(s.contains(SHUTDOWN_MESSAGE))
+				return true;
+			stopBuffer = new StringBuilder();
+			return false;
+		}
+		return false;
 	}
 
 	@Override
 	public boolean disconnected() {
 		return disconnected;
 	}
-
-	
 }
