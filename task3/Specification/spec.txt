@@ -1,0 +1,21 @@
+abstract class QueueBroker {
+QueueBroker(Broker broker);
+String name();
+MessageQueue accept(int port);
+MessageQueue connect(String name, int port);
+}
+
+abstract class MessageQueue {
+void send(byte[] bytes, int offset, int length);
+byte[] receive();
+void close();
+boolean closed();
+}
+
+abstract class Task extends Thread {
+Task(Broker b, Runnable r);
+Task(QueueBroker b, Runnable r);
+Broker getBroker();
+QueueBroker getQueueBroker();
+static Task getTask();
+}
