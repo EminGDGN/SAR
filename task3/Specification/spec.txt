@@ -1,21 +1,39 @@
-abstract class QueueBroker {
-QueueBroker(Broker broker);
-String name();
-MessageQueue accept(int port);
-MessageQueue connect(String name, int port);
+public abstract class QueueBroker {
+
+    public QueueBroker(String name);
+
+    public interface AcceptListener {
+        void accepted(MessageQueue queue);
+    }
+
+    public boolean bind(int port, AcceptListener listener);
+    public boolean unbind(int port);
+
+    public interface ConnectListener {
+        public void connected(MessageQueue queue)
+        public refused();
+    }
+
+    public boolean connect(String name, int port, ConnnectListener listener);
 }
 
-abstract class MessageQueue {
-void send(byte[] bytes, int offset, int length);
-byte[] receive();
-void close();
-boolean closed();
+public abstract class MessageQueue {
+    public interface Listener {
+        void received(byte[] msg);
+        void closed();
+    }
+
+    public void setListener(Listener l);
+
+    public boolean send(byte[] bytes);
+    public boolean send(byte[] bytes, int offset, int length);
+
+    public void close();
+    public boolean closed();
 }
 
-abstract class Task extends Thread {
-Task(Broker b, Runnable r);
-Task(QueueBroker b, Runnable r);
-Broker getBroker();
-QueueBroker getQueueBroker();
-static Task getTask();
+public abstract class Task{
+    Task(QueueBroker b, Runnable r);
+    Broker getBroker();
+    static Task getTask();
 }
