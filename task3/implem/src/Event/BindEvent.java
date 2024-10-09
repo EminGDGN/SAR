@@ -1,5 +1,6 @@
 package Event;
 
+import Interface.Event;
 import Listener.AcceptListener;
 import implm.Channel;
 import implm.QueueBroker;
@@ -18,7 +19,7 @@ public class BindEvent extends Event{
 	}
 	
 	@Override
-	public void react() {
+	public void run() {
 		if(qb._bind(port, listener)) {
 			this.kill();
 		}

@@ -54,7 +54,7 @@ public class MessageQueue extends Interface.MessageQueue{
 
 	public boolean _receive() {
 		if(reception == null)
-			reception = new Message(null);
+			reception = new Message();
 		
 		byte[] msg = new byte[255];
 		int channelStatus = c.read(msg, 0, 255);
@@ -62,7 +62,7 @@ public class MessageQueue extends Interface.MessageQueue{
 		reception.addBuffer(data);
 		
 		if(reception.done()) {
-			this.l.received(reception.getBuffer(1 + reception.getLengthSize(), reception.getLength()));
+			this.l.received(reception.getBuffer(reception.getOffset(), reception.getLength()));
 			reception = null;
 			return true;
 		}

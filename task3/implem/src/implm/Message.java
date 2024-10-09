@@ -19,10 +19,6 @@ public class Message {
 			byte[] lenBytes = encodeLength(length);
 			this.lengthSize = lenBytes.length;
 			this.buffer = concat(lenBytes, lengthSize, buffer, length);
-			this.buffer = new byte[lengthSize + length];
-			System.arraycopy(this.buffer, 0, lenBytes, 0, lengthSize);
-			System.arraycopy(this.buffer, lengthSize, buffer, 0, length);
-			
 			this.offset = offset;
 			this.length = length + lengthSize;
 			this.hash = Arrays.hashCode(buffer);
@@ -145,8 +141,8 @@ public class Message {
 	
 	private byte[] concat(byte[] b1, int l1, byte[] b2, int l2) {
 		byte[] buffer = new byte[l1 + l2];
-		System.arraycopy(buffer, 0, b1, 0, l1);
-		System.arraycopy(buffer, l1, b2, 0, l2);
+		System.arraycopy(b1, 0, buffer, 0, l1);
+		System.arraycopy(b2, 0, buffer, l1, l2);
 		return buffer;
 	}
 }

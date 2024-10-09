@@ -24,10 +24,9 @@ public class Executor extends EventPump {
 	public void run() {
 		Event e;
 		while(true) {
-			e = queue.remove(0);
-			while (e!=null) {
-			e.react();
-			e = queue.remove(0);
+			while (!queue.isEmpty()) {
+				e = queue.remove(0);
+				new Thread(e).start();
 			}
 			sleep();
 		}
@@ -39,7 +38,7 @@ public class Executor extends EventPump {
 		notify();
 	}
 	
-	private void sleep() {
+	private synchronized void sleep() {
 		try {
 			wait();
 		} catch (InterruptedException ex){

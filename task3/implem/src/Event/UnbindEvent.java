@@ -1,6 +1,7 @@
 package Event;
 
 
+import Interface.Event;
 import implm.QueueBroker;
 
 public class UnbindEvent extends Event{
@@ -15,7 +16,7 @@ public class UnbindEvent extends Event{
 	}
 	
 	@Override
-	public void react() {
+	public void run() {
 		if(qb._unbind(port)) {
 			this.kill();
 		}
