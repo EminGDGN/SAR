@@ -1,8 +1,8 @@
-package Event;
+package Interface;
 
 import implm.Executor;
 
-public abstract class Event implements Interface.Event{
+public abstract class Event implements Runnable{
 	
 	protected Executor executor;
 	private boolean done;
@@ -16,9 +16,8 @@ public abstract class Event implements Interface.Event{
 	}
 
 	@Override
-	public abstract void react();
+	public abstract void run();
 
-	@Override
 	public void post() {
 		executor.post(this);
 	}
