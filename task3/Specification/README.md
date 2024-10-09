@@ -1,44 +1,22 @@
-# Task 2
+# Task 3
 
 ## Purpose
 
-Simple multithreaded message queue framework to send and receive messages
+Simple thread/event mix message queue framework to send and receive messages
 
 ## Requirements
 
 [JDK 17 or greater](https://www.oracle.com/java/technologies/downloads/)
-
-### Server side
-
-Within your server, start a Broker with a specific name.
-Give the broker to a QueueBroker for connection handling.
-Listen for connections with the accept method on a specific port number.
-For every connection demands, open a channel with the client.
-Use this channel to start a message queue and handle message-based communication.
-The broker name is unique and the port number is specific for every broker.
-
-### Client side
-
-For clients, start a Broker with a specific name and give it to a QueueBroker.
-Use the connect method with the server name and server port number to open a connection.
-The connect method will return the message queue based on a communication channel with the server.
-Use the message queue to receive and send messages.
-
-### Concurrency
-
-A task is a thread managing 1 or several brokers/QueueBrokers.
-Each task is linked to a specific channel/message queue from a broker.
-The task is responsible of reading/writing messages from the communication framework.
 
 ### QueueBroker
 
 #### Constructor
 
 ```java
-QueueBroker(Broker broker);
+QueueBroker(String name);
 ```
 Param :
-    - broker (Broker) : Broker instance for communication management
+    - name (String) : Name of the broker for communication management
 
 #### Methods
 
@@ -49,40 +27,53 @@ Description : Get the name of the broker
 Return : String representing the broker name
 
 ```java
-MessageQueue accept(int port);
+public boolean bind(int port, AcceptListener listener);
 ```
 Description : Listening for connection demands through port number port
 Param :
     - port (integer) : Port number where the QueueBroker is listening on
-Return : MessageQueue object representing the communication pipe with the client
+    - listener (AcceptListener) : The callback method to trigger when an accept is done
+Return : A boolean to confirm or not that the port asked is bind
 
 ```java
-MessageQueue connect(String name, int port);
+public boolean unbind(int port);
+```
+Description : Remove the port binding for the queue broker
+Param :
+    - port (integer) : Port number the QueueBroker is binded with
+Return : A boolean to confirm or not that the port asked is unbind
+
+```java
+public boolean connect(String name, int port, ConnnectListener listener);
 ```
 Description : Connect the QueueBroker to the desired remote QueueBroker identified by the values name/port
 Param :
     - name (String) : Name of the remote QueueBroker
     - port (integer) : Port number of the remote QueueBroker
-Return : MessageQueue object representing the communication pipe with the remote QueueBroker
+    - listener (ConnectListener) : Callback method to trigger when the connect is done
+Return : A boolean to confirm or not that the QueueBroker is connected with the remote instance
 
 ### MessageQueue
 
 #### Methods
 
 ```java
-byte[] receive();
-```
-Description : Read message sent through the message queue
-Return : byte array representing the message received
-
-```java
-void send(byte[] bytes, int offset, int length);
+public boolean send(byte[] bytes);
+public boolean send(byte[] bytes, int offset, int length);
 ```
 Description : Send bytes from byte array with starting offset and message length to the remote broker
 Param :
     - bytes (byte[]) : Byte buffer with the message content
     - offset (integer) : Start to send the message at the position specified by the offset
     - length (integer) : Number of bytes to send from the byte buffer
+Return : A boolean to confirm that the message has been sent fully
+
+```java
+public void setListener(Listener l);
+```
+Description : Set the message queue message listener
+Param :
+    - listener(Listener) : Callback method to define message queue behavior
 
 ```java
 void close();
@@ -100,13 +91,6 @@ Return : True if the message queue is close. Otherwise false
 #### Constructor
 
 ```java
-Task(Broker b, Runnable r);
-```
-Param :
-    - b (Broker) : The broker managed by the Task
-    - r (Runnable) : A runnable method defining the Task behavior for Broker management
-
-```java
 Task(QueueBroker b, Runnable r);
 ```
 Param :
@@ -118,12 +102,6 @@ static Broker getBroker()
 ```
 Description : static method to find the broker linked to the current thread
 Return : The Broker object linked to the current Thread
-
-```java
-QueueBroker getQueueBroker();
-```
-Description : static method to find the QueueBroker linked to the current thread
-Return : The QueueBroker object linked to the current Thread
 
 ```java
 static Task getTask();
