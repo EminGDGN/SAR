@@ -1,6 +1,7 @@
 package Event;
 
 
+import Interface.Event;
 import Listener.ConnectListener;
 import implm.QueueBroker;
 
@@ -20,7 +21,7 @@ public class ConnectEvent extends Event{
 	}
 	
 	@Override
-	public void react() {
+	public void run() {
 		if(qb._connect(name, port, listener)) {
 			this.kill();
 		}

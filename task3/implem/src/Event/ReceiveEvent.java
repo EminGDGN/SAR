@@ -1,5 +1,6 @@
 package Event;
 
+import Interface.Event;
 import implm.MessageQueue;
 
 public class ReceiveEvent extends Event{
@@ -12,7 +13,7 @@ public class ReceiveEvent extends Event{
 	}
 
 	@Override
-	public void react() {
+	public void run() {
 		if(mq._receive())
 			this.kill();
 		else

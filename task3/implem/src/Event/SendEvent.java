@@ -1,5 +1,6 @@
 package Event;
 
+import Interface.Event;
 import Listener.ConnectListener;
 import implm.MessageQueue;
 import implm.QueueBroker;
@@ -20,7 +21,7 @@ public class SendEvent extends Event{
 	}
 
 	@Override
-	public void react() {
+	public void run() {
 		if(mq._send(buffer, offset, length))
 			this.kill();
 		else
