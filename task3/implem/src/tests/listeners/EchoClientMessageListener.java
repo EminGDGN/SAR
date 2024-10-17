@@ -19,7 +19,7 @@ public class EchoClientMessageListener implements Listener{
 
 	@Override
 	public void closed() {
-		mq.close();
+		System.out.println("Client Message queue closed");
 		
 	}
 

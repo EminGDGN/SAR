@@ -1,6 +1,7 @@
 package Event;
 
 import Interface.Event;
+import Interface.Task;
 import Listener.AcceptListener;
 import implm.Channel;
 import implm.QueueBroker;
@@ -20,12 +21,7 @@ public class BindEvent extends Event{
 	
 	@Override
 	public void run() {
-		if(qb._bind(port, listener)) {
-			this.kill();
-		}
-		else {
-			super.post();
-		}
+		qb._bind(port, listener);
 	}
 
 }

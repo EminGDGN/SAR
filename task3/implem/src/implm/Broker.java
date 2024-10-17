@@ -10,12 +10,14 @@ public class Broker extends Interface.Broker{
 	
 	private ArrayList<RDV> rdvs;
 	private ArrayList<Channel> channels;
+	private int stopAccept;
 
 	public Broker(String name) {
 		super(name);
 		rdvs = new ArrayList<>();
 		channels = new ArrayList<>();
 		BrokerManager.addBroker(name, this);
+		stopAccept = -1;
 	}
 
 	@Override
@@ -27,11 +29,15 @@ public class Broker extends Interface.Broker{
 		Channel channel;
 		if(rdv == null) {
 			rdv = this.createRDV(this, port);
-			while(!rdv.getReadyState()) {
+			while(!rdv.getReadyState() && stopAccept == -1) {
 				try {
 					wait();
 				}
 				catch (InterruptedException e) {}
+			}
+			if(stopAccept == port) {
+				stopAccept = -1;
+				return null;
 			}
 			
 			channel = createChannel(true, rdv);
@@ -123,6 +129,10 @@ public class Broker extends Interface.Broker{
 	
 	public String getName() {
 		return super.name;
+	}
+	
+	public void setStopAccept(int port) {
+		this.stopAccept = port;
 	}
 
 }

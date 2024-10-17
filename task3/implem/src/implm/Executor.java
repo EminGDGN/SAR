@@ -26,7 +26,7 @@ public class Executor extends EventPump {
 		while(true) {
 			while (!queue.isEmpty()) {
 				e = queue.remove(0);
-				new Thread(e).start();
+				e.run();
 			}
 			sleep();
 		}

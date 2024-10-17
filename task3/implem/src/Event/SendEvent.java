@@ -22,10 +22,7 @@ public class SendEvent extends Event{
 
 	@Override
 	public void run() {
-		if(mq._send(buffer, offset, length))
-			this.kill();
-		else
-			super.post();
+		mq._send(buffer, offset, length);
 		
 	}
 	

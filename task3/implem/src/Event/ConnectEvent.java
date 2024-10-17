@@ -22,12 +22,7 @@ public class ConnectEvent extends Event{
 	
 	@Override
 	public void run() {
-		if(qb._connect(name, port, listener)) {
-			this.kill();
-		}
-		else {
-			super.post();
-		}
+		qb._connect(name, port, listener);
 	}
 
 }

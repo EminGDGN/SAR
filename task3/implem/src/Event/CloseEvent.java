@@ -3,18 +3,19 @@ package Event;
 import Interface.Event;
 import implm.MessageQueue;
 
-public class ReceiveEvent extends Event{
-
-	private MessageQueue mq;
+public class CloseEvent extends Event{
 	
-	public ReceiveEvent(MessageQueue mq) {
+private MessageQueue mq;
+	
+	public CloseEvent(MessageQueue mq) {
 		super();
 		this.mq = mq;
 	}
 
 	@Override
 	public void run() {
-		mq._receive();
+		mq._close();
 		
 	}
+
 }
