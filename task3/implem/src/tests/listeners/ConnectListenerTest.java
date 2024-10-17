@@ -1,6 +1,5 @@
 package tests.listeners;
 
-import Event.ReceiveEvent;
 import Interface.MessageQueue;
 import Listener.ConnectListener;
 
@@ -11,7 +10,6 @@ public class ConnectListenerTest implements ConnectListener{
 		byte[] msg = "Client connected send message".getBytes();
 		queue.setListener(new EchoClientMessageListener(queue));
 		queue.send(msg);
-		new ReceiveEvent((implm.MessageQueue) queue);
 	}
 
 	@Override

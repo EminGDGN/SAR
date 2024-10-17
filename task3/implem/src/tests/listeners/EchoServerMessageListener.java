@@ -13,14 +13,14 @@ public class EchoServerMessageListener implements Listener{
 
 	@Override
 	public void received(byte[] msg) {
-		System.out.println("server receiverd message : " + new String(msg));
+		System.out.println("server received message : " + new String(msg));
 		mq.send(msg);
 		
 	}
 
 	@Override
 	public void closed() {
-		mq.close();
+		System.out.println("Server Message queue closed");
 		
 	}
 

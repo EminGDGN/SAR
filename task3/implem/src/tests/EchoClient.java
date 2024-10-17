@@ -1,12 +1,22 @@
 package tests;
 
+import Interface.Event;
 import Interface.QueueBroker;
 import implm.Task;
+import tests.listeners.ConnectListenerTest;
 
-public class EchoClient extends Task{
+public class EchoClient extends Event{
 
-	public EchoClient(QueueBroker qb, Runnable r) {
-		super(qb, r);
+	private QueueBroker qb;
+	
+	public EchoClient(QueueBroker qb) {
+		super();
+		this.qb = qb;
+	}
+
+	@Override
+	public void run() {
+		qb.connect("server", 80, new ConnectListenerTest());
 	}
 
 }
