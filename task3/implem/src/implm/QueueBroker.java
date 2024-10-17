@@ -1,57 +1,96 @@
 package implm;
 
+import java.util.HashMap;
+
 import Event.BindEvent;
 import Event.ConnectEvent;
+import Event.ReceiveEvent;
 import Event.UnbindEvent;
+import implm.MessageQueue;
 import Listener.AcceptListener;
 import Listener.ConnectListener;
 
 public class QueueBroker extends Interface.QueueBroker{
+	
+	private HashMap<Integer, Task> binds;
 
 	public QueueBroker(String name) {
 		super(name);
+		this.binds = new HashMap<>();
 	}
 
 	@Override
 	public boolean bind(int port, AcceptListener listener) {
+		synchronized (binds){
+			if(binds.get(port) != null)
+				return false;
+		}
+		
 		new BindEvent(this, port, listener);
 		return true;
 	}
 	
-	public boolean _bind(int port, AcceptListener listener) {
-		try {
-			Channel channel = (Channel) this.b.accept(port);
-			listener.accepted(new implm.MessageQueue(channel));
-			return true;
-		}
-		catch(IllegalStateException e) {
-			System.out.println("QueueBroker already have port " + port + " binded");
-			return false;
-		}
+	public void _bind(int port, AcceptListener listener) {
+		
+		Task t = new Task(b, new Runnable() {
+			@Override
+			public void run() {
+				while(true) {
+					Channel channel = (Channel) b.accept(port);
+					if(channel == null)
+						break; //port unbinded
+					MessageQueue mq = new MessageQueue(channel);
+					new ReceiveEvent(mq);
+					listener.accepted(mq);
+				}
+				
+			}
+		});
+		binds.put(port, t);
+		t.start();
 	}
 
 	@Override
 	public boolean unbind(int port) {
+		synchronized (binds){
+			if(binds.get(port) == null)
+				return false;
+		}
+		
 		new UnbindEvent(this, port);
 		return true;
 	}
 	
-	public boolean _unbind(int port) {
-		implm.Broker b = (implm.Broker)this.b;
-		b.removeRdv(b.getAcceptRdv(port));
-		return true; //If port wasn't bind, nothing happens
+	public void _unbind(int port) {
+		Task t = binds.get(port);
+		if(t != null) {
+			synchronized(b) {
+				((Broker)t.getBroker()).setStopAccept(port);
+				t.interrupt();
+				binds.remove(port);
+			}
+		}
 	}
 
 	@Override
 	public boolean connect(String name, int port, ConnectListener listener) {
+		Broker target = (Broker) BrokerManager.lookup(name);
+		if(target == null)
+			return false;
+		
 		new ConnectEvent(this, name, port, listener);
 		return true;
 	}
 	
-	public boolean _connect(String name, int port, ConnectListener listener) {
-		Channel channel = (Channel) this.b.connect(name, port);
-		listener.connected(new implm.MessageQueue(channel));
-		return true;
+	public void _connect(String name, int port, ConnectListener listener) {
+		new Task(b, new Runnable() {
+			@Override
+			public void run() {
+				Channel channel = (Channel) b.connect(name, port);
+				MessageQueue mq = new MessageQueue(channel);
+				new ReceiveEvent(mq);
+				listener.connected(mq);
+			}
+		}).start();
 	}
-
 }
