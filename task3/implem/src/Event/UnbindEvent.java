@@ -17,11 +17,6 @@ public class UnbindEvent extends Event{
 	
 	@Override
 	public void run() {
-		if(qb._unbind(port)) {
-			this.kill();
-		}
-		else {
-			super.post();
-		}
+		qb._unbind(port);
 	}
 }
