@@ -1,6 +1,7 @@
 package implm;
 
-import java.util.Arrays;
+
+import java.util.ArrayList;
 
 import Event.CloseEvent;
 import Event.ReceiveEvent;
@@ -12,9 +13,16 @@ public class MessageQueue extends Interface.MessageQueue{
 	
 	private Channel c;
 	private Listener l;
+	private MessageQueue mq;
+	private Message messageReceive;
+	private ArrayList<Message> queueSend;
 	
 	public MessageQueue(Channel c) {
 		this.c = c;
+		this.mq = null;
+		this.l = null;
+		messageReceive = null;
+		queueSend = new ArrayList<>();
 	}
 	
 	@Override
@@ -26,71 +34,34 @@ public class MessageQueue extends Interface.MessageQueue{
 	public boolean send(byte[] bytes, int offset, int length) {
 		if(c.disconnected())
 			return false;
-		new SendEvent(this, bytes, offset, length);
+		queueSend.add(new Message(bytes));
+		new SendEvent(this);
 		return true;
 	}
 	
-	public void _send(byte[] bytes, int offset, int length) {
-		new Thread(new Runnable() {
-			
-			@Override
-			public void run() {
-				try {
-					byte[] size = encodeLength(length);
-					int len = size.length;
-					byte[] sizeLen = {(byte)len};
-					c.write(sizeLen, 0, 1);
-					
-					int channelStatus = 0;
-					while(channelStatus != len) {
-						channelStatus += c.write(size, channelStatus, len - channelStatus);
-					}
-					channelStatus = 0;
-					while(channelStatus != length) {
-						channelStatus += c.write(bytes, offset + channelStatus, length - channelStatus);
-					}
-				}
-				catch(DisconnectedException e) {
-					System.out.println("Message Queue disconnected");
-				}
+	public void _send() {
+		try {
+			Message m = queueSend.get(0);
+			m.write(c);
+			new ReceiveEvent(mq);
+			if(m.fullyWrote()) {
+				queueSend.remove(0);
+			} else {
+				new SendEvent(this);
 			}
-		}).start();
+		} catch(DisconnectedException e) {
+			l.closed();
+		}
 	}
 
 	public void _receive() {
-		
-		MessageQueue mq = this;
-		new Thread(new Runnable() {
-			
-			@Override
-			public void run() {
-				try {
-					byte[] size = new byte[1];
-					c.read(size, 0, 1);
-					int sizeLen = size[0];
-					
-					size = new byte[sizeLen];
-					int channelStatus = 0;
-					while(channelStatus != sizeLen) {
-						channelStatus += c.read(size, channelStatus, sizeLen - channelStatus);
-					}
-					int len = decodeLength(size, sizeLen);
-					
-					channelStatus = 0;
-					byte[] content = new byte[len];
-					while(channelStatus != len) {
-						channelStatus += c.read(content, channelStatus, len - channelStatus);
-					}
-					
-					l.received(content);
-					new ReceiveEvent(mq);
-				}
-				catch(DisconnectedException e) {
-					l.closed();
-				}
-				
-			}
-		}).start();
+		if(messageReceive == null)
+			messageReceive = new Message();
+		messageReceive.addData(c);
+		if(messageReceive.fullyRead()) {
+			l.received(messageReceive.getData());
+			messageReceive = null;
+		}
 	}
 
 	@Override
@@ -103,14 +74,9 @@ public class MessageQueue extends Interface.MessageQueue{
 	}
 	
 	public void _close() {
-		new Thread(new Runnable() {
-			
-			@Override
-			public void run() {
-				c.disconnect();
-				l.closed();
-			}
-		}).start();
+		c.disconnect();
+		mq.close();
+		l.closed();
 	}
 
 	@Override
@@ -123,40 +89,11 @@ public class MessageQueue extends Interface.MessageQueue{
 		this.l = l;
 	}
 	
-	private byte[] encodeLength(int length) {
-		if(length < 256) {
-			byte[] result = {(byte)length};
-			return result;
+	public void setRemoteMQ(MessageQueue mq) {
+		if(this.mq == null) {
+			this.mq = mq;
+			mq.setRemoteMQ(this);
 		}
-		
-		byte[] result;
-		if(length < 65536) {
-			result = new byte[2];
-			result[0] = (byte) (length >> 8);
-			result[1] = (byte) length;
-			return result;
-		}
-		if(length < 16777216) {
-			result = new byte[3];
-			result[0] = (byte) (length >> 16);
-			result[1] = (byte) (length >> 8);
-			result[2] = (byte) length;
-		}
-		
-		result = new byte[4];
-		result[0] = (byte) (length >> 24);
-		result[1] = (byte) (length >> 16);
-		result[2] = (byte) (length >> 8);
-		result[3] = (byte) length;
-		return result;
-	}
-	
-	private int decodeLength(byte[] size, int len) {
-		int result = 0;
-	    for (int i = 0; i < len; i++) {
-	        result |= (size[i] & 0xFF) << ((len - i - 1) * 8);
-	    }
-	    return result;
 	}
 
 }
