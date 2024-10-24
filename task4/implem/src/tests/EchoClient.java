@@ -2,7 +2,6 @@ package tests;
 
 import Interface.Event;
 import Interface.QueueBroker;
-import implm.Task;
 import tests.listeners.ConnectListenerTest;
 
 public class EchoClient extends Event{

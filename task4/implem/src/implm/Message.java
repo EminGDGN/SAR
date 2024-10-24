@@ -67,7 +67,7 @@ public class Message {
 			throw new IllegalStateException("Message object is used to read, not to write");
 		
 		if(buffer.length > i)
-			i = c.write(buffer, i, buffer.length - i);
+			i += c.write(buffer, i, buffer.length - i);
 	}
 	
 	public byte[] getData() {
