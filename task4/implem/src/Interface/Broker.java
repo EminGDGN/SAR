@@ -1,5 +1,8 @@
 package Interface;
 
+import Listener.AcceptListener;
+import implm.CircularBuffer;
+
 public abstract class Broker {
 	
 	protected String name;
@@ -16,6 +19,9 @@ public abstract class Broker {
 		return name;
 	}
 	
-    public abstract Channel accept(int port);
-    public abstract Channel connect(String name, int port);
+	public abstract boolean bind(int port, AcceptListener listener);
+	public abstract boolean unbind(int port);
+    public abstract MessageQueue accept(int port, Channel c, CircularBuffer read, CircularBuffer write);
+    public abstract MessageQueue connect(String name, int port);
+    public abstract boolean isBind(int port);
 }
