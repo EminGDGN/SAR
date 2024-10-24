@@ -1,0 +1,39 @@
+public abstract class QueueBroker {
+
+    public QueueBroker(String name);
+
+    public interface AcceptListener {
+        void accepted(MessageQueue queue);
+    }
+
+    public boolean bind(int port, AcceptListener listener);
+    public boolean unbind(int port);
+
+    public interface ConnectListener {
+        public void connected(MessageQueue queue)
+        public refused();
+    }
+
+    public boolean connect(String name, int port, ConnnectListener listener);
+}
+
+public abstract class MessageQueue {
+    public interface Listener {
+        void received(byte[] msg);
+        void closed();
+    }
+
+    public void setListener(Listener l);
+
+    public boolean send(byte[] bytes);
+    public boolean send(byte[] bytes, int offset, int length);
+
+    public void close();
+    public boolean closed();
+}
+
+public abstract class Task{
+    Task(QueueBroker b, Runnable r);
+    Broker getBroker();
+    static Task getTask();
+}
