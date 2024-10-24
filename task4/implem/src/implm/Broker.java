@@ -1,138 +1,72 @@
 package implm;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import Interface.Channel;
+import Listener.AcceptListener;
 
 public class Broker extends Interface.Broker{
 	
+	public static final int DEFAULT_CAPACITY = 255;
 	
-	private ArrayList<RDV> rdvs;
-	private ArrayList<Channel> channels;
-	private int stopAccept;
-
+	
+	private HashMap<Integer, AcceptListener> binds;
+	
 	public Broker(String name) {
 		super(name);
-		rdvs = new ArrayList<>();
-		channels = new ArrayList<>();
+		binds = new HashMap<>();
 		BrokerManager.addBroker(name, this);
-		stopAccept = -1;
 	}
-
+	
 	@Override
-	public synchronized Channel accept(int port){
-		if(this.getAcceptRdv(port) != null)
-			throw new IllegalStateException("Accept on same port already pending");
+	public boolean bind(int port, AcceptListener listener) {
 		
-		RDV rdv = this.getConnectRdv(port);
-		Channel channel;
-		if(rdv == null) {
-			rdv = this.createRDV(this, port);
-			while(!rdv.getReadyState() && stopAccept == -1) {
-				try {
-					wait();
-				}
-				catch (InterruptedException e) {}
-			}
-			if(stopAccept == port) {
-				stopAccept = -1;
-				return null;
-			}
-			
-			channel = createChannel(true, rdv);
+		if(!isBind(port)) {
+			binds.put(port, listener);
+			return true;
 		}
-		else {
-			rdv.join(this, true);
-			channel = createChannel(false, rdv);
-		}
-		
-		this.removeRdv(rdv);
-		channels.add(channel);
-		return channel;
+		return false;
 	}
-
+	
 	@Override
-	public Channel connect(String name, int port) {
+	public boolean unbind(int port) {
+		if(isBind(port)) {
+			binds.remove(port);
+			return true;
+		}
+		return false;
+	}
+	
+	@Override
+	public MessageQueue connect(String name, int port) {
 		Broker target = (Broker) BrokerManager.lookup(name);
-		if(target != null) {
-			synchronized(target) {
-				RDV rdv = target.getAcceptRdv(port);
-				Channel channel;
-				if (rdv == null) {
-					rdv = this.askRDV(target, port);
-					channel = createChannel(true, rdv);
-				}
-				else {
-					boolean joined = rdv.join(this, false);
-					if(!joined) {
-						rdv = this.askRDV(target, port);
-						channel = createChannel(true, rdv);
-					}
-					else {
-						channel = createChannel(false, rdv);
-					}
-				}
-				
-				return channel;
-			}
+		if(target != null && target.isBind(port)) {
+			CircularBuffer read = new CircularBuffer(DEFAULT_CAPACITY);
+			CircularBuffer write = new CircularBuffer(DEFAULT_CAPACITY);
+			Channel c = new implm.Channel(read, write);
+			return target.accept(port, c, write, read);
 		}
 		return null;
 		
 	}
-	
-	public Channel createChannel(boolean owner, RDV rdv) {
-		if(owner)
-			return new implm.Channel(rdv.getOwnerReadCircularBuffer(), rdv.getOwnerWriteCircularBuffer());
-		return new implm.Channel(rdv.getOwnerWriteCircularBuffer(), rdv.getOwnerReadCircularBuffer());
-	}
-	
-	public RDV askRDV(Broker target, int port) {
-		RDV rdv = target.createRDV(this, port);
-		while(!rdv.getReadyState()) {
-			try {
-				target.wait();
-			}
-			catch (InterruptedException e) {}
-		}
-		return rdv;
-	}
-	
-	public synchronized RDV createRDV(Broker b, int port) {
-		RDV rdv = new RDV(b, port);
-		rdvs.add(rdv);
-		notifyAll();
-		return rdv;
-	}
-	
-	public synchronized RDV getAcceptRdv(int port) {
-		for(RDV rdv : rdvs) {
-			if(rdv.getPort() == port && rdv.isOwner(this)) {
-				return rdv;
-			}
-		}
-		return null;
-	}
-	
-	public synchronized RDV getConnectRdv(int port) {
-		for(RDV rdv : rdvs) {
-			if(rdv.getPort() == port && !rdv.isOwner(this)) {
-				return rdv;
-			}
-		}
-		return null;
-	}
-	
-	public void removeRdv(RDV rdv) {
-		rdvs.remove(rdv);
+
+	@Override
+	public MessageQueue accept(int port, Channel c, CircularBuffer read, CircularBuffer write){
+		Channel channel = new implm.Channel(read, write);
+		MessageQueue mqLocal = new MessageQueue((implm.Channel) channel);
+		MessageQueue mqRemote = new MessageQueue((implm.Channel) c);
+		mqLocal.setRemoteMQ(mqRemote);
+		binds.get(port).accepted(mqLocal);
+		return mqRemote;
 	}
 	
 	public String getName() {
 		return super.name;
 	}
 	
-	public void setStopAccept(int port) {
-		this.stopAccept = port;
+	@Override
+	public boolean isBind(int port) {
+		return binds.get(port) != null;
 	}
 
 }

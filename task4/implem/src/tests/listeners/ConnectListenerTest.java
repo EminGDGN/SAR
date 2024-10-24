@@ -14,7 +14,7 @@ public class ConnectListenerTest implements ConnectListener{
 
 	@Override
 	public void refused() {
-		// TODO Auto-generated method stub
+		System.out.println("Connection refused");
 		
 	}
 
