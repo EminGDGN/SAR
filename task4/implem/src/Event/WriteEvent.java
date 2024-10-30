@@ -1,20 +1,27 @@
 package Event;
 
 import Interface.Event;
-import implm.MessageQueue;
+import Interface.IChannel;
+import implm.Channel;
 
-public class SendEvent extends Event{
+public class WriteEvent extends Event{
 	
-	private MessageQueue mq;
+	private Channel c;
+	private byte[] buffer;
+	private int offset;
+	private int length;
 	
-	public SendEvent(MessageQueue mq) {
+	public WriteEvent(IChannel c, byte[] buffer, int offset, int length) {
 		super();
-		this.mq = mq;
+		this.c = (Channel) c;
+		this.buffer = buffer;
+		this.offset = offset;
+		this.length = length;
 	}
 
 	@Override
 	public void run() {
-		mq._send();
+		c._write(buffer, offset, length);
 		
 	}
 	

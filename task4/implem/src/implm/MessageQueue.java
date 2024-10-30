@@ -1,28 +1,58 @@
 package implm;
 
-
 import java.util.ArrayList;
 
-import Event.CloseEvent;
-import Event.ReceiveEvent;
-import Event.SendEvent;
+import Interface.IChannel;
 import Listener.Listener;
-import implm.Channel.DisconnectedException;
 
-public class MessageQueue extends Interface.MessageQueue{
+public class MessageQueue extends Interface.IMessageQueue{
 	
-	private Channel c;
-	private Listener l;
-	private MessageQueue mq;
-	private Message messageReceive;
-	private ArrayList<Message> queueSend;
+	public class ChannelListener implements Listener{
+		
+		private Listener l;
+		private Message m;
+		
+		public ChannelListener(Listener l) {
+			this.l = l;
+			this.m = null;
+		}
+
+		@Override
+		public void received(byte[] msg) {
+			if(m == null)
+				m = new Message();
+			m.addData(msg);
+			if(m.fullyRead()) {
+				l.received(m.getData());
+				m = null;
+			}
+			
+		}
+
+		@Override
+		public void closed() {
+			l.closed();
+			
+		}
+
+		@Override
+		public void sent() {
+			msgs.remove(0);
+			if(msgs.size() > 0) {
+				Message m = msgs.get(0);
+				byte[] data = m.getData();
+				c.write(data, 0, data.length);
+			}
+			
+		}
+	}
 	
-	public MessageQueue(Channel c) {
+	private IChannel c;
+	private ArrayList<Message> msgs;
+	
+	public MessageQueue(IChannel c) {
 		this.c = c;
-		this.mq = null;
-		this.l = null;
-		messageReceive = null;
-		queueSend = new ArrayList<>();
+		this.msgs = new ArrayList<>();
 	}
 	
 	@Override
@@ -34,49 +64,19 @@ public class MessageQueue extends Interface.MessageQueue{
 	public boolean send(byte[] bytes, int offset, int length) {
 		if(c.disconnected())
 			return false;
-		queueSend.add(new Message(bytes));
-		new SendEvent(this);
+		
+		Message m = new Message(bytes, offset, length);
+		msgs.add(m);
+		if(msgs.size() == 1) {
+			byte[] data = m.getData();
+			c.write(data, 0, data.length);
+		}
 		return true;
-	}
-	
-	public void _send() {
-		try {
-			Message m = queueSend.get(0);
-			m.write(c);
-			new ReceiveEvent(mq);
-			if(m.fullyWrote()) {
-				queueSend.remove(0);
-			} else {
-				new SendEvent(this);
-			}
-		} catch(DisconnectedException e) {
-			l.closed();
-		}
-	}
-
-	public void _receive() {
-		if(messageReceive == null)
-			messageReceive = new Message();
-		messageReceive.addData(c);
-		if(messageReceive.fullyRead()) {
-			l.received(messageReceive.getData());
-			messageReceive = null;
-		}
 	}
 
 	@Override
 	public boolean close() {
-		if(c.disconnected())
-			return false;
-		new CloseEvent(this);
-		return true;
-		
-	}
-	
-	public void _close() {
-		c.disconnect();
-		mq.close();
-		l.closed();
+		return c.disconnect();
 	}
 
 	@Override
@@ -86,14 +86,6 @@ public class MessageQueue extends Interface.MessageQueue{
 
 	@Override
 	public void setListener(Listener l) {
-		this.l = l;
+		c.setListener(new ChannelListener(l));
 	}
-	
-	public void setRemoteMQ(MessageQueue mq) {
-		if(this.mq == null) {
-			this.mq = mq;
-			mq.setRemoteMQ(this);
-		}
-	}
-
 }

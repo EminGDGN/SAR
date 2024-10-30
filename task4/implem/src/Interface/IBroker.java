@@ -1,15 +1,16 @@
 package Interface;
 
-import Listener.AcceptListener;
+import Listener.BrokerAcceptListener;
+import Listener.BrokerConnectListener;
 import implm.CircularBuffer;
 
-public abstract class Broker {
+public abstract class IBroker {
 	
 	protected String name;
 	
-	public Broker(String name) {
+	public IBroker(String name) {
 		
-		if(this.getClass() == Broker.class) {
+		if(this.getClass() == IBroker.class) {
 			throw new IllegalCallerException("Broker class is abstract");
 		}
 		this.name = name;
@@ -19,9 +20,9 @@ public abstract class Broker {
 		return name;
 	}
 	
-	public abstract boolean bind(int port, AcceptListener listener);
+	public abstract boolean bind(int port, BrokerAcceptListener listener);
 	public abstract boolean unbind(int port);
-    public abstract MessageQueue accept(int port, Channel c, CircularBuffer read, CircularBuffer write);
-    public abstract MessageQueue connect(String name, int port);
+    public abstract void accept(int port, IChannel c, CircularBuffer read, CircularBuffer write);
+    public abstract boolean connect(String name, int port, BrokerConnectListener l);
     public abstract boolean isBind(int port);
 }

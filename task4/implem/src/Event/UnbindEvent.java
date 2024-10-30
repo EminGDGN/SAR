@@ -2,21 +2,22 @@ package Event;
 
 
 import Interface.Event;
-import implm.QueueBroker;
+import Interface.IBroker;
+import implm.Broker;
 
 public class UnbindEvent extends Event{
 
 	private int port;
-	private QueueBroker qb;
+	private Broker b;
 	
-	public UnbindEvent(QueueBroker qb, int port) {
+	public UnbindEvent(IBroker b, int port) {
 		super();
 		this.port = port;
-		this.qb = qb;
+		this.b = (Broker) b;
 	}
 	
 	@Override
 	public void run() {
-		qb._unbind(port);
+		b._unbind(port);
 	}
 }

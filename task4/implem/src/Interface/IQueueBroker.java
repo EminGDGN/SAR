@@ -3,12 +3,12 @@ package Interface;
 import Listener.AcceptListener;
 import Listener.ConnectListener;
 
-public abstract class QueueBroker {
+public abstract class IQueueBroker {
 	
-	protected Broker b;
+	protected IBroker b;
 
-	public QueueBroker(String name) {
-		if(this.getClass() == QueueBroker.class)
+	public IQueueBroker(String name) {
+		if(this.getClass() == IQueueBroker.class)
 			throw new IllegalStateException("Abstract class QueueBroker must not be instanciate");
 		b = new implm.Broker(name);
 	}

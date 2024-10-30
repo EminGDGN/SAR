@@ -1,20 +1,21 @@
 package Event;
 
 import Interface.Event;
-import implm.MessageQueue;
+import Interface.IChannel;
+import implm.Channel;
 
 public class ReceiveEvent extends Event{
 
-	private MessageQueue mq;
+	private Channel c;
 	
-	public ReceiveEvent(MessageQueue mq) {
+	public ReceiveEvent(IChannel c) {
 		super();
-		this.mq = mq;
+		this.c = (Channel) c;
 	}
 
 	@Override
 	public void run() {
-		mq._receive();
+		c._read();
 		
 	}
 }

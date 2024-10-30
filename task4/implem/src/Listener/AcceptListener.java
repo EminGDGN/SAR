@@ -1,7 +1,7 @@
 package Listener;
 
-import Interface.MessageQueue;
+import Interface.IMessageQueue;
 
 public interface AcceptListener {
-	public void accepted(MessageQueue queue);
+	public void accepted(IMessageQueue queue);
 }
