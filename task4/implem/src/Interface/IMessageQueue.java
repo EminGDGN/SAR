@@ -2,7 +2,7 @@ package Interface;
 
 import Listener.Listener;
 
-public abstract class MessageQueue {
+public abstract class IMessageQueue {
 	
 	public abstract boolean send(byte[] bytes);
 	public abstract boolean send(byte[] bytes, int offset, int length);

@@ -1,14 +1,15 @@
 package tests.listeners;
 
-import Interface.MessageQueue;
+import Interface.IMessageQueue;
 import Listener.ConnectListener;
 
 public class ConnectListenerTest implements ConnectListener{
 
 	@Override
-	public void connected(MessageQueue queue) {
+	public void connected(IMessageQueue queue) {
 		byte[] msg = "Client connected send message".getBytes();
 		queue.setListener(new EchoClientMessageListener(queue));
+		queue.send(msg);
 		queue.send(msg);
 	}
 

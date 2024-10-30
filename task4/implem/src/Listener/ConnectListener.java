@@ -1,8 +1,8 @@
 package Listener;
 
-import Interface.MessageQueue;
+import Interface.IMessageQueue;
 
 public interface ConnectListener {
-	public void connected(MessageQueue queue);
+	public void connected(IMessageQueue queue);
 	public void refused();
 }

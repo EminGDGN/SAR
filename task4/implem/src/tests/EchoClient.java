@@ -1,14 +1,14 @@
 package tests;
 
 import Interface.Event;
-import Interface.QueueBroker;
+import Interface.IQueueBroker;
 import tests.listeners.ConnectListenerTest;
 
 public class EchoClient extends Event{
 
-	private QueueBroker qb;
+	private IQueueBroker qb;
 	
-	public EchoClient(QueueBroker qb) {
+	public EchoClient(IQueueBroker qb) {
 		super();
 		this.qb = qb;
 	}

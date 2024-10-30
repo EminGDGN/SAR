@@ -1,5 +1,6 @@
 package implm;
 
+
 public class Message {
 	
 	private int sizeLen;
@@ -14,25 +15,24 @@ public class Message {
 		i = 0;
 	}
 	
-	public Message(byte[] data) {
+	public Message(byte[] data, int offset, int length) {
 		len = encodeLength(data.length);
 		sizeLen = len.length;
 		
-		buffer = new byte[1 + len.length + data.length];
+		buffer = new byte[1 + len.length + length - offset];
 		buffer[0] = (byte)sizeLen;
 		System.arraycopy(len, 0, buffer, 1, len.length);
-		System.arraycopy(data, 0, buffer, 1 + len.length, data.length);
+		System.arraycopy(data, offset, buffer, 1 + len.length, length);
 		
 		i = 0;
 		state = "write_message";
 	}
 	
-	public void addData(Channel c) {
+	public void addData(byte[] data) {
 		if(state.equals("write_message"))
 			throw new IllegalStateException("Message object is used to write, not to read");
 		
-		byte[] data = new byte[Broker.DEFAULT_CAPACITY];
-		int length = c.read(data, 0, Broker.DEFAULT_CAPACITY);
+		int length = data.length;
 		int k = 0;
 		
 		if(state.equals("read_size_len")) {
@@ -60,14 +60,6 @@ public class Message {
 				state = "fully_read";
 			}
 		}
-	}
-	
-	public void write(Channel c) {
-		if(!state.equals("write_message"))
-			throw new IllegalStateException("Message object is used to read, not to write");
-		
-		if(buffer.length > i)
-			i += c.write(buffer, i, buffer.length - i);
 	}
 	
 	public byte[] getData() {

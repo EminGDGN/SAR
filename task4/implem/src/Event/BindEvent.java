@@ -1,25 +1,27 @@
 package Event;
 
 import Interface.Event;
-import Listener.AcceptListener;
+import Interface.IBroker;
+import Listener.BrokerAcceptListener;
+import implm.Broker;
 import implm.QueueBroker;
 
 public class BindEvent extends Event{
 	
 	private int port;
-	private AcceptListener listener;
-	private QueueBroker qb;
+	private BrokerAcceptListener listener;
+	private Broker b;
 	
-	public BindEvent(QueueBroker qb, int port, AcceptListener listener) {
+	public BindEvent(IBroker b, int port, BrokerAcceptListener listener) {
 		super();
 		this.port = port;
 		this.listener = listener;
-		this.qb = qb;
+		this.b = (Broker) b;
 	}
 	
 	@Override
 	public void run() {
-		qb._bind(port, listener);
+		b._bind(port, listener);
 	}
 
 }

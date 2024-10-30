@@ -2,27 +2,37 @@ package Event;
 
 
 import Interface.Event;
+import Interface.IBroker;
+import Listener.BrokerConnectListener;
 import Listener.ConnectListener;
+import implm.Broker;
 import implm.QueueBroker;
 
 public class ConnectEvent extends Event{
 	
 	private int port;
-	private ConnectListener listener;
+	private BrokerConnectListener listener;
 	private String name;
-	private QueueBroker qb;
+	private Broker b;
 	
-	public ConnectEvent(QueueBroker qb, String name, int port, ConnectListener listener) {
-		super();
+	public ConnectEvent(int tries, IBroker b, String name, int port, BrokerConnectListener listener) {
+		super(tries);
 		this.name = name;
 		this.port = port;
 		this.listener = listener;
-		this.qb = qb;
+		this.b = (Broker) b;
+	}
+	
+	public ConnectEvent(IBroker b, String name, int port, BrokerConnectListener listener) {
+		this(Event.MAX_TRIES, b, name, port, listener);
 	}
 	
 	@Override
 	public void run() {
-		qb._connect(name, port, listener);
+		if(super.getRemainingTries() == 0)
+			listener.refused();
+		else
+			b._connect(this, name, port, listener);
 	}
 
 }

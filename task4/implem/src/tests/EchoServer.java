@@ -2,14 +2,14 @@ package tests;
 
 
 import Interface.Event;
-import Interface.QueueBroker;
+import Interface.IQueueBroker;
 import tests.listeners.AcceptListenerTest;
 
 public class EchoServer extends Event{
 	
-	private QueueBroker qb;
+	private IQueueBroker qb;
 
-	public EchoServer(QueueBroker qb) {
+	public EchoServer(IQueueBroker qb) {
 		super();
 		this.qb = qb;
 	}

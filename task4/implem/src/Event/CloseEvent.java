@@ -1,20 +1,21 @@
 package Event;
 
 import Interface.Event;
-import implm.MessageQueue;
+import Interface.IChannel;
+import implm.Channel;
 
 public class CloseEvent extends Event{
 	
-private MessageQueue mq;
+private Channel c;
 	
-	public CloseEvent(MessageQueue mq) {
+	public CloseEvent(IChannel c) {
 		super();
-		this.mq = mq;
+		this.c = (Channel) c;
 	}
 
 	@Override
 	public void run() {
-		mq._close();
+		c._disconnect();
 		
 	}
 

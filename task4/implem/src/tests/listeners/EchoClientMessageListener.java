@@ -1,13 +1,13 @@
 package tests.listeners;
 
 import Listener.Listener;
-import Interface.MessageQueue;
+import Interface.IMessageQueue;
 
 public class EchoClientMessageListener implements Listener{
 	
-	private MessageQueue mq;
+	private IMessageQueue mq;
 	
-	public EchoClientMessageListener(MessageQueue mq) {
+	public EchoClientMessageListener(IMessageQueue mq) {
 		this.mq = mq;
 	}
 
@@ -20,6 +20,12 @@ public class EchoClientMessageListener implements Listener{
 	@Override
 	public void closed() {
 		System.out.println("Client Message queue closed");
+		
+	}
+
+	@Override
+	public void sent() {
+		// TODO Auto-generated method stub
 		
 	}
 

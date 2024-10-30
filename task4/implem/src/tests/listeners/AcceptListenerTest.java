@@ -1,25 +1,25 @@
 package tests.listeners;
 
-import Interface.MessageQueue;
-import Interface.QueueBroker;
+import Interface.IMessageQueue;
+import Interface.IQueueBroker;
 import Listener.AcceptListener;
 import tests.EchoClient;
 
 public class AcceptListenerTest implements AcceptListener{
 	
-	private QueueBroker qb;
+	private IQueueBroker qb;
 	private int port;
 	
-	public AcceptListenerTest(QueueBroker qb, int port) {
+	public AcceptListenerTest(IQueueBroker qb, int port) {
 		this.qb = qb;
 		this.port = port;
 	}
 
 	@Override
-	public void accepted(MessageQueue queue) {
+	public void accepted(IMessageQueue queue) {
 		queue.setListener(new EchoServerMessageListener(queue));
 		qb.unbind(port);
-		QueueBroker client2 = new implm.QueueBroker("client2");
+		IQueueBroker client2 = new implm.QueueBroker("client2");
 		new EchoClient(client2);
 	}
 
